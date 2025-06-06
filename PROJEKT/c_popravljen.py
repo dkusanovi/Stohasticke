@@ -3,49 +3,54 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib.patches import Patch
 
-# DORA KUSANOVIĆ 25.5.2025.
+# DORA KUSANOVIĆ 5.6.2025.
 
 def initialize_lattice(L, fraction=0.0):   # fraction - pojedinci s mišljenjem +1
     # rešetka s vrijednostima 0 i 1
     size = L * L
-    num_one = int(size * fraction)                       # koliko osoba u početku ima mišljenje 1
-    num_zero = size - num_one                            # koliko osoba u početku ima mišljenje 0
-    lattice = np.array([1]*num_one + [-1]*num_zero)  # array sa svim 0 i q
+    num_one = int(size * fraction)                            # koliko osoba u početku ima mišljenje 1
+    num_zero = size - num_one                                 # koliko osoba u početku ima mišljenje 0
+    lattice = np.array([1]*num_one + [0]*num_zero)           # array sa svim 0 i 1
     np.random.shuffle(lattice)                                # nasumično se rešetki pripisuju vrijednosti iz arraya
     return lattice.reshape((L, L))                            # pretvara 1D listu u 2D rešetku
 
-def neighbors(i, j, L):
-    # šest susjeda od jedne ćelije (i, j)
-    neighbors_list = []
-    # za svakog susjeda računaju se njihove koordinate s periodičnim rubnim uvjetima
-    for dx, dy in [(-1, 0), (1, 0), 
-                   (0, -1), (0, 1), 
-                   (-1, -1), (1, 1)]:
-        ni, nj = (i + dx) % L, (j + dy) % L
-        neighbors_list.append((ni, nj))
-    return neighbors_list
 
-def run_sznajd(L, fraction = 0.0, max_steps = 1000000):
+def neighbors(i, j, L):
+    return [((i - 1) % L, j),
+            ((i + 1) % L, j),
+            (i, (j - 1) % L),
+            (i, (j + 1) % L)]
+
+
+
+def run_sznajd(L, fraction=0.0, max_steps=1000000):
     lattice = initialize_lattice(L, fraction)
     
     for step in range(max_steps):
-        i, j = np.random.randint(0, L, size=2)                # nasumična ćelija
-        ni, nj = neighbors(i, j, L)[np.random.randint(0, 6)]  # nasumični susjed
-        
-        if lattice[i, j] == lattice[ni, nj]:   # ako imaju isto mišljenje utječu na susjede
+        i, j = np.random.randint(0, L, size=2)           # nasumična ćelija
+        nbs_ij = neighbors(i, j, L)
+        ni, nj = nbs_ij[np.random.randint(0, len(nbs_ij))]  # nasumični susjed
+
+        if lattice[i, j] == lattice[ni, nj]:
             opinion = lattice[i, j]
-            # promjena mišljenja susjeda od para
-            for x, y in neighbors(i, j, L) + neighbors(ni, nj, L):
+
+            # Union of neighbors of both (i,j) and (ni,nj)
+            six_neighbors = neighbors(i, j, L) + neighbors(ni, nj, L)
+            
+            # Optional: exclude (i,j) and (ni,nj) themselves
+            six_neighbors = set(six_neighbors) - {(i, j), (ni, nj)}
+
+            for x, y in six_neighbors:
                 lattice[x, y] = opinion
-        
-        # provjerava je li konsenzus postignut
+
         if np.all(lattice == lattice[0, 0]):
-            print(f"{step} steps to consensus.")
+            print(f"{step} koraka do konsenzusa.")
             break
     else:
-        print("Max steps reached without consensus.")
+        print("Maksimalan broj koraka bez konsenzusa.")
 
     return lattice
+
 
 L = 100
 
