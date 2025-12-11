@@ -10,7 +10,7 @@ def initialize_lattice(L, fraction=0.0):   # fraction - pojedinci s mišljenjem 
     size = L * L
     num_one = int(size * fraction)                            # koliko osoba u početku ima mišljenje 1
     num_zero = size - num_one                                 # koliko osoba u početku ima mišljenje 0
-    lattice = np.array([1]*num_one + [0]*num_zero)           # array sa svim 0 i 1
+    lattice = np.array([1]*num_one + [0]*num_zero)            # array sa svim 0 i 1
     np.random.shuffle(lattice)                                # nasumično se rešetki pripisuju vrijednosti iz arraya
     return lattice.reshape((L, L))                            # pretvara 1D listu u 2D rešetku
 
@@ -34,10 +34,10 @@ def run_sznajd(L, fraction=0.0, max_steps=1000000):
         if lattice[i, j] == lattice[ni, nj]:
             opinion = lattice[i, j]
 
-            # Union of neighbors of both (i,j) and (ni,nj)
+            # ukupni susjedi
             six_neighbors = neighbors(i, j, L) + neighbors(ni, nj, L)
             
-            # Optional: exclude (i,j) and (ni,nj) themselves
+            # izbacivanje glavne ćelije i odabranog susjeda
             six_neighbors = set(six_neighbors) - {(i, j), (ni, nj)}
 
             for x, y in six_neighbors:
